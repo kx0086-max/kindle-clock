@@ -24,15 +24,13 @@
         }
 
         /* 核心修改：强制横屏的精确算法 */
+        /* 这里去掉了对 body 类的依赖，默认直接生效，或者通过 js 控制 */
         body.force-landscape #app {
-            /* 宽高互换 */
             width: 100vh; 
             height: 100vw;
-            /* 定位到原本屏幕的最底部 */
             position: absolute;
             top: 100vh;
             left: 0;
-            /* 以左上角为轴，逆时针转90度，完美铺满横向屏幕 */
             transform-origin: top left;
             -webkit-transform-origin: top left;
             transform: rotate(-90deg);
@@ -135,7 +133,8 @@
         }
     </style>
 </head>
-<body>
+<!-- 默认直接加上 force-landscape 类，实现打开即横屏 -->
+<body class="force-landscape">
 
 <div id="app">
     <!-- 上部显示区 -->
@@ -166,7 +165,8 @@
     <!-- 下部导航区 -->
     <div id="nav-area">
         <div class="nav-btn active" id="btn-nav-clock" onclick="switchView('clock')">数字时钟</div>
-        <div class="nav-btn" id="btn-rotate" onclick="toggleRotate()">🔄 旋转</div>
+        <!-- 按钮文字默认改为“竖屏” -->
+        <div class="nav-btn" id="btn-rotate" onclick="toggleRotate()">📱 竖屏</div>
         <div class="nav-btn" id="btn-nav-pomo" onclick="switchView('pomo')">番茄钟</div>
     </div>
 </div>
@@ -178,13 +178,13 @@
         var btn = document.getElementById('btn-rotate');
         
         if (body.className === 'force-landscape') {
-            // 恢复竖屏
+            // 如果当前是横屏，点击后恢复竖屏
             body.className = '';
-            btn.innerHTML = '🔄 旋转';
+            btn.innerHTML = '🔄 横屏';
         } else {
-            // 强制横屏
+            // 如果当前是竖屏，点击后恢复横屏
             body.className = 'force-landscape';
-            btn.innerHTML = '📱 竖屏'; // 改变按钮文字，提示当前状态
+            btn.innerHTML = '📱 竖屏';
         }
     }
 
