@@ -3,109 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kindle 时钟</title>
+    <title>Kindle 极简时钟</title>
     <style>
-        /* 核心技巧：将整个身体旋转90度 */
-        html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            overflow: hidden;
-            background-color: #000;
-        }
-        body {
-            margin: 0; padding: 0;
-            /* 因为旋转了，宽高互换 */
-            width: 100vh; 
-            height: 100vw;
+        /* 墨水屏专属高对比度样式 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
             background-color: #000000;
             color: #ffffff;
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            overflow: hidden;
             user-select: none;
-            
-            /* 旋转90度并校正位置 */
-            transform: rotate(90deg);
-            transform-origin: top left;
-            position: absolute;
-            top: 100%;
-            left: 0;
         }
 
-        /* 整个页面默认就是横向排布 */
+        /* 视图容器 */
         .view {
             display: none;
-            width: 100%; height: 100%;
-            flex-direction: row; 
+            width: 100vw;
+            height: 100vh;
+            flex-direction: column;
             justify-content: space-between;
+            align-items: center;
+            padding-top: 5vh;
             box-sizing: border-box;
         }
-        .view.active { display: flex; }
-
-        /* 左半部分：时钟 */
-        .clock-area {
-            flex: 6;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            border-right: 3px solid #333;
+        .view.active {
+            display: flex;
         }
+
+        /* --- 主页时钟视图 --- */
+        .main-clock-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
         #time {
-            font-size: 32vh; /* 根据高度自适应 */
+            font-size: 32vh; /* 占据屏幕80%的视觉中心 */
             font-weight: bold;
+            letter-spacing: -2px;
             line-height: 1;
             font-variant-numeric: tabular-nums;
         }
-        #date { font-size: 6vh; color: #888; margin-top: 20px; }
 
-        /* 右半部分：番茄钟 */
+        #date {
+            font-size: 5vh;
+            color: #888888;
+            margin-top: 2vh;
+        }
+
+        /* --- 番茄钟视图 --- */
         .pomo-area {
-            flex: 4;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-        .pomo-status {
-            font-size: 5vh; border: 2px solid #fff;
-            padding: 5px 20px; border-radius: 10px; margin-bottom: 20px;
-        }
-        .pomo-timer {
-            font-size: 22vh; font-weight: bold;
-            line-height: 1; font-variant-numeric: tabular-nums; margin-bottom: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
         }
 
-        /* 加减时间按钮 */
-        .settings-row { display: flex; gap: 20px; align-items: center; margin-bottom: 20px; }
+        .pomo-status {
+            font-size: 4vh;
+            margin-bottom: 2vh;
+            border: 2px solid #fff;
+            padding: 10px 30px;
+            border-radius: 10px;
+        }
+
+        .pomo-timer {
+            font-size: 25vh;
+            font-weight: bold;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 3vh;
+        }
+
+        /* 设置区域 */
+        .settings-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 3vh;
+            font-size: 3vh;
+            align-items: center;
+        }
+        
         .setting-btn {
-            background: #000; color: #fff; border: 2px solid #fff;
-            font-size: 5vh; width: 10vh; height: 10vh;
-            border-radius: 50%; font-weight: bold;
+            background: #000;
+            color: #fff;
+            border: 2px solid #fff;
+            font-size: 4vh;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
         }
         .setting-btn:active { background: #fff; color: #000; }
-        #set-minutes { font-size: 6vh; font-weight: bold; width: 80px; text-align: center;}
 
         /* 控制按钮 */
-        .pomo-controls { display: flex; gap: 20px; }
+        .pomo-controls {
+            display: flex;
+            gap: 30px;
+        }
         .pomo-controls button {
-            background: #000; color: #fff; border: 3px solid #fff;
-            padding: 10px 30px; font-size: 5vh; border-radius: 10px; font-weight: bold;
+            background: #000;
+            color: #fff;
+            border: 3px solid #fff;
+            padding: 10px 40px;
+            font-size: 4vh;
+            border-radius: 10px;
         }
         .pomo-controls button:active { background: #fff; color: #000; }
 
-        /* 导航栏放在最底下 */
+        /* --- 底部导航栏 --- */
         .bottom-nav {
-            position: absolute; bottom: 0; left: 0;
-            width: 100%; height: 12vh; display: flex; border-top: 3px solid #333;
+            width: 100vw;
+            height: 12vh;
+            display: flex;
+            border-top: 2px solid #333;
         }
+
         .bottom-nav button {
-            flex: 1; background: #000; color: #fff;
-            border: none; font-size: 5vh; font-weight: bold;
+            flex: 1;
+            background: #000;
+            color: #fff;
+            border: none;
+            font-size: 5vh;
+            font-weight: bold;
+            cursor: pointer;
         }
-        .bottom-nav button.active { background: #fff; color: #000; }
+        
+        /* 选中的导航高亮 */
+        .bottom-nav button.active {
+            background: #fff;
+            color: #000;
+        }
     </style>
 </head>
 <body>
 
     <!-- 视图1：数字时钟主页 -->
     <div id="view-clock" class="view active">
-        <div class="clock-area">
-            <div id="time">00:00</div>
+        <div class="main-clock-area">
+            <div id="time">00:00:00</div>
             <div id="date">加载中...</div>
         </div>
         <div class="bottom-nav">
@@ -116,18 +160,15 @@
 
     <!-- 视图2：番茄钟 -->
     <div id="view-pomo" class="view">
-        <div class="clock-area" style="border-right: none; width: 30%; flex: 3;">
-            <!-- 番茄钟界面左侧放个极简的时间，看着不空 -->
-            <div id="pomo-small-time" style="font-size: 12vh; font-weight: bold;">00:00</div>
-        </div>
-        
-        <div class="pomo-area" style="border-left: 3px solid #333; flex: 7;">
+        <div class="pomo-area">
             <div id="pomo-status" class="pomo-status">专注模式</div>
             <div id="pomo-display" class="pomo-timer">25:00</div>
             
+            <!-- 设置时间区域（使用加减按钮避免打字） -->
             <div class="settings-row" id="setting-area">
+                <span>设置分钟：</span>
                 <button class="setting-btn" onclick="adjustTime(-5)">-</button>
-                <span id="set-minutes">25</span>
+                <span id="set-minutes" style="font-size: 5vh; width: 80px; text-align: center;">25</span>
                 <button class="setting-btn" onclick="adjustTime(5)">+</button>
             </div>
 
@@ -136,7 +177,6 @@
                 <button onclick="resetPomo()">重置</button>
             </div>
         </div>
-        
         <div class="bottom-nav">
             <button id="nav-clock2" onclick="switchView('clock')">数字时钟</button>
             <button id="nav-pomo2" class="active" onclick="switchView('pomo')">番茄钟</button>
@@ -144,15 +184,19 @@
     </div>
 
     <script>
-        // 页面切换
+        // --- 页面切换逻辑 ---
         function switchView(viewName) {
+            // 隐藏所有视图
             document.getElementById('view-clock').classList.remove('active');
             document.getElementById('view-pomo').classList.remove('active');
+            
+            // 取消所有导航按钮的高亮
             document.getElementById('nav-clock').classList.remove('active');
             document.getElementById('nav-pomo').classList.remove('active');
             document.getElementById('nav-clock2').classList.remove('active');
             document.getElementById('nav-pomo2').classList.remove('active');
 
+            // 显示目标视图并高亮对应按钮
             if (viewName === 'clock') {
                 document.getElementById('view-clock').classList.add('active');
                 document.getElementById('nav-clock').classList.add('active');
@@ -162,16 +206,13 @@
             }
         }
 
-        // 时钟逻辑
+        // --- 时钟逻辑 ---
         function updateClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
-            
-            // 主页大时间
+            // 考虑到墨水屏刷新率，主页不显示秒，只显示时和分
             document.getElementById('time').textContent = `${h}:${m}`; 
-            // 番茄钟界面小时间
-            document.getElementById('pomo-small-time').textContent = `${h}:${m}`; 
 
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -182,8 +223,8 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 番茄钟逻辑
-        let pomoTotalSeconds = 25 * 60; 
+        // --- 番茄钟逻辑 ---
+        let pomoTotalSeconds = 25 * 60; // 默认25分钟
         let pomoTimeLeft = pomoTotalSeconds;
         let pomoTimer = null;
         let isRunning = false;
@@ -204,12 +245,13 @@
             pomoDisplay.textContent = formatTime(pomoTimeLeft);
         }
 
+        // 调整时间
         function adjustTime(mins) {
-            if (isRunning) return; 
+            if (isRunning) return; // 运行中不允许调整
             let currentMins = Math.floor(pomoTotalSeconds / 60);
             currentMins += mins;
             if (currentMins < 1) currentMins = 1;
-            if (currentMins > 120) currentMins = 120; 
+            if (currentMins > 120) currentMins = 120; // 限制最长120分钟
 
             pomoTotalSeconds = currentMins * 60;
             pomoTimeLeft = pomoTotalSeconds;
@@ -219,14 +261,16 @@
 
         function togglePomo() {
             if (isRunning) {
+                // 暂停
                 clearInterval(pomoTimer);
                 isRunning = false;
                 btnStart.textContent = '继续';
-                settingArea.style.display = 'flex'; 
+                settingArea.style.display = 'flex'; // 暂停时允许修改时间
             } else {
+                // 开始
                 isRunning = true;
                 btnStart.textContent = '暂停';
-                settingArea.style.display = 'none'; 
+                settingArea.style.display = 'none'; // 运行时隐藏设置区，防止误触
                 
                 pomoTimer = setInterval(() => {
                     pomoTimeLeft--;
@@ -238,6 +282,7 @@
                         btnStart.textContent = '开始';
                         settingArea.style.display = 'flex';
                         pomoStatus.textContent = '时间到！';
+                        // Kindle 墨水屏提示
                         alert('时间到！');
                         pomoTimeLeft = pomoTotalSeconds;
                         updatePomoDisplay();
@@ -257,6 +302,7 @@
             updatePomoDisplay();
         }
         
+        // 初始化
         updatePomoDisplay();
     </script>
 </body>
