@@ -11,20 +11,11 @@
             background-color: #000000;
             color: #ffffff;
             font-family: Arial, sans-serif;
-            overflow: hidden; /* 必须隐藏滚动条 */
+            overflow: hidden;
             user-select: none;
         }
 
-        /* 主容器 */
-        #app {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 核心修改：强制横屏的精确算法 */
-        /* 这里去掉了对 body 类的依赖，默认直接生效，或者通过 js 控制 */
+        /* 强制横屏的精确算法 */
         body.force-landscape #app {
             width: 100vh; 
             height: 100vw;
@@ -35,6 +26,13 @@
             -webkit-transform-origin: top left;
             transform: rotate(-90deg);
             -webkit-transform: rotate(-90deg);
+        }
+
+        #app {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* === 上半部分：显示区域 === */
@@ -119,42 +117,28 @@
             cursor: pointer;
             background: #000; color: #fff;
         }
-        .nav-btn.active {
-            background: #fff; color: #000;
-        }
-        .nav-btn:not(:last-child) {
-            border-right: 3px solid #333;
-        }
+        .nav-btn.active { background: #fff; color: #000; }
+        .nav-btn:not(:last-child) { border-right: 3px solid #333; }
         
-        /* 旋转按钮 */
-        #btn-rotate {
-            flex: 0.6;
-            font-size: 8vmin;
-        }
+        #btn-rotate { flex: 0.6; font-size: 8vmin; }
     </style>
 </head>
-<!-- 默认直接加上 force-landscape 类，实现打开即横屏 -->
 <body class="force-landscape">
 
 <div id="app">
-    <!-- 上部显示区 -->
     <div id="display-area">
-        <!-- 视图1：时钟 -->
         <div id="view-clock" class="view active">
             <div id="time">00:00</div>
             <div id="date">加载中...</div>
         </div>
 
-        <!-- 视图2：番茄钟 -->
         <div id="view-pomo" class="view">
             <div id="pomo-timer">25:00</div>
-            
             <div class="pomo-settings" id="pomo-settings">
                 <div class="set-btn" onclick="adjustTime(-5)">-</div>
                 <div id="set-mins">25</div>
                 <div class="set-btn" onclick="adjustTime(5)">+</div>
             </div>
-
             <div class="pomo-controls">
                 <div class="ctrl-btn" id="btn-start" onclick="togglePomo()">开始</div>
                 <div class="ctrl-btn" onclick="resetPomo()">重置</div>
@@ -162,27 +146,74 @@
         </div>
     </div>
 
-    <!-- 下部导航区 -->
     <div id="nav-area">
         <div class="nav-btn active" id="btn-nav-clock" onclick="switchView('clock')">数字时钟</div>
-        <!-- 按钮文字默认改为“竖屏” -->
         <div class="nav-btn" id="btn-rotate" onclick="toggleRotate()">📱 竖屏</div>
         <div class="nav-btn" id="btn-nav-pomo" onclick="switchView('pomo')">番茄钟</div>
     </div>
 </div>
 
 <script>
+    // 全局时间偏移量（用于修正本地时间）
+    var timeOffset = 0;
+
+    // --- 获取网络时间逻辑 ---
+    function syncNetworkTime() {
+        // 使用苏宁的公共时间接口，相对比较稳定
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://quan.suning.com/getSysTime.do', true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    // 返回格式如："2023-10-27 10:00:00"
+                    if (data && data.sysTime2) {
+                        var netDate = new Date(data.sysTime2.replace(/-/g, '/')); 
+                        var localDate = new Date();
+                        // 计算网络时间和本地时间的差值
+                        timeOffset = netDate.getTime() - localDate.getTime();
+                        console.log("时间同步成功，偏移量(ms):", timeOffset);
+                    }
+                } catch(e) {
+                    console.log("网络时间解析失败，使用本地时间", e);
+                }
+            }
+        };
+        xhr.onerror = function() {
+            console.log("网络时间请求失败，使用本地时间");
+        };
+        xhr.send();
+    }
+
+    // --- 时钟逻辑 ---
+    function updateClock() {
+        // 用本地时间 + 偏移量，得出最终的时间
+        var now = new Date(new Date().getTime() + timeOffset);
+        
+        var h = String(now.getHours()).padStart(2, '0');
+        var m = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('time').textContent = h + ':' + m; 
+
+        var year = now.getFullYear();
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var date = String(now.getDate()).padStart(2, '0');
+        var weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+        document.getElementById('date').textContent = year + '年' + month + '月' + date + '日 星期' + weekDays[now.getDay()];
+    }
+
+    // 初始化：先同步网络时间，然后立刻启动时钟
+    syncNetworkTime(); 
+    setInterval(updateClock, 1000);
+    updateClock();
+
     // --- 旋转屏幕逻辑 ---
     function toggleRotate() {
         var body = document.body;
         var btn = document.getElementById('btn-rotate');
-        
         if (body.className === 'force-landscape') {
-            // 如果当前是横屏，点击后恢复竖屏
             body.className = '';
             btn.innerHTML = '🔄 横屏';
         } else {
-            // 如果当前是竖屏，点击后恢复横屏
             body.className = 'force-landscape';
             btn.innerHTML = '📱 竖屏';
         }
@@ -203,22 +234,6 @@
             document.getElementById('btn-nav-pomo').classList.add('active');
         }
     }
-
-    // --- 时钟逻辑 ---
-    function updateClock() {
-        var now = new Date();
-        var h = String(now.getHours()).padStart(2, '0');
-        var m = String(now.getMinutes()).padStart(2, '0');
-        document.getElementById('time').textContent = h + ':' + m; 
-
-        var year = now.getFullYear();
-        var month = String(now.getMonth() + 1).padStart(2, '0');
-        var date = String(now.getDate()).padStart(2, '0');
-        var weekDays = ['日', '一', '二', '三', '四', '五', '六'];
-        document.getElementById('date').textContent = year + '年' + month + '月' + date + '日 星期' + weekDays[now.getDay()];
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
 
     // --- 番茄钟逻辑 ---
     var pomoTotalSeconds = 25 * 60; 
@@ -268,7 +283,6 @@
             pomoTimer = setInterval(function() {
                 pomoTimeLeft--;
                 updatePomoDisplay();
-
                 if (pomoTimeLeft <= 0) {
                     clearInterval(pomoTimer);
                     isRunning = false;
